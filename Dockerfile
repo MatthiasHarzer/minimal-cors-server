@@ -1,4 +1,4 @@
-FROM 3.11.1-bullseye-slim
+FROM python:3.11
 
 RUN apt-get update
 

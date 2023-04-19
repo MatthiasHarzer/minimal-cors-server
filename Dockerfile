@@ -2,6 +2,13 @@ FROM 3.11.1-bullseye-slim
 
 RUN apt-get update
 
+# Install git
+RUN apt-get install -y git
+
+# Clone repository
+RUN git clone "https://github.com/MatthiasHarzer/minimal-cors-server.git"
+WORKDIR /minimal-cors-server
+
 # Install dependencies
 RUN python -m pip install -r requirements.txt
 

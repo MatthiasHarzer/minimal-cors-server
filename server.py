@@ -7,11 +7,11 @@ from starlette.responses import PlainTextResponse
 
 app = FastAPI()
 
-RequestType = Literal["GET", "POST", "PUT", "DELETE"]
+RequestMethod = Literal["GET", "POST", "PUT", "DELETE"]
 
 
 class Request(BaseModel):
-    type: RequestType
+    method: RequestMethod
     url: str
     body: str | None = None
     headers: dict | None = None
@@ -21,5 +21,5 @@ class Request(BaseModel):
 
 @app.post("/request")
 def handle_request(request: Request):
-    req = requests.request(request.type, request.url, data=request.data, headers=request.headers, json=request.body)
+    req = requests.request(request.method, request.url, data=request.data, headers=request.headers, json=request.body)
     return PlainTextResponse(req.text)

@@ -40,7 +40,7 @@ def handle_request(request: Request):
         return PlainTextResponse(cached)
 
     req = requests.request(request.method, request.url, data=request.data, headers=request.headers, json=request.body)
-    if not cached:
+    if request.cache and not cached:
         cache.set(request, req.text)
 
     return PlainTextResponse(req.text)

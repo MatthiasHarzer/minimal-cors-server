@@ -1,6 +1,6 @@
 import json
 import sqlite3
-
+from datetime import datetime
 from sqlite3 import Error
 
 from request import Request
@@ -19,6 +19,10 @@ def _create_table(conn, create_table_sql) -> None:
         print(e)
 
 
+def _get_current_timestamp() -> str:
+    return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+
+
 class Cache:
     _TABLE_SQL = """
         CREATE TABLE IF NOT EXISTS cache (
@@ -30,6 +34,7 @@ class Cache:
     headers TEXT NULL,
     data TEXT NULL,
     timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    
     UNIQUE (method, url, body, headers, data)
     );"""
 
@@ -46,7 +51,12 @@ class Cache:
         except Error as e:
             print("Error while initializing cache: " + str(e))
 
-    def get(self, request: Request) -> str | None:
+    def _get(self, request: Request) -> tuple[str, datetime] | None:
+        """
+        Get the response and timestamp from the cache
+        :param request: The request to get the response for
+        :return:  A tuple containing the response and timestamp
+        """
         if not self.initialized:
             return None
 
@@ -56,27 +66,63 @@ class Cache:
             with self.connect() as conn:
                 c = conn.cursor()
                 c.execute(
-                    "SELECT response FROM cache WHERE method = ? AND url = ? AND body = ? AND headers = ? AND data = ?",
+                    "SELECT response, timestamp FROM cache WHERE method = ? "
+                    "AND url = ? AND body = ? AND headers = ? AND data = ?",
                     (request.method, request.url, request.body, headers, data))
                 result = c.fetchone()
 
-                return result[0] if result else None
-        except Error as e:
+                if not result:
+                    return None
+
+                time_stamp = datetime.strptime(result[1], "%Y-%m-%d %H:%M:%S")
+
+                return str(result[0]), time_stamp
+        except Exception as e:
             print("Error while fetching from cache: " + str(e))
 
         return None
+
+    def get(self, request: Request) -> str | None:
+        cached = self._get(request)
+
+        if not cached:
+            return None
+
+        response, timestamp = cached
+
+        time_diff = datetime.now() - timestamp
+
+        if 0 < request.max_age < time_diff.seconds:
+            return None
+
+        return response
 
     def set(self, request: Request, response: str) -> None:
         if not self.initialized:
             return
 
+        exists = self._get(request) is not None
+        print("Exists: " + str(exists))
+
         headers = json.dumps(request.headers) if request.headers else ""
         data = json.dumps(request.data) if request.data else ""
         try:
             with self.connect() as conn:
-                c = conn.cursor()
-                c.execute("INSERT INTO cache (method, url, response, body, headers, data) VALUES (?, ?, ?, ?, ?, ?)",
-                          (request.method, request.url, response, request.body, headers, data))
-                conn.commit()
+                if exists:
+                    c = conn.cursor()
+
+                    c.execute("UPDATE cache SET response = ?, timestamp = ? WHERE method = ? "
+                              "AND url = ? AND body = ? AND headers = ? AND data = ?",
+                              (response, _get_current_timestamp(), request.method, request.url, request.body, headers,
+                               data))
+                    conn.commit()
+                    return
+                else:
+                    c = conn.cursor()
+                    c.execute(
+                        "INSERT INTO cache (method, url, response, body, headers, data, timestamp) "
+                        "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                        (request.method, request.url, response, request.body, headers, data, _get_current_timestamp()))
+                    conn.commit()
         except Error as e:
             print("Error while saving to cache: " + str(e))

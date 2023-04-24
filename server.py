@@ -1,8 +1,5 @@
-from typing import Literal
-
 import requests
 from fastapi import FastAPI
-from pydantic import BaseModel
 from starlette.middleware.cors import CORSMiddleware
 from starlette.responses import PlainTextResponse
 

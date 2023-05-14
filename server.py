@@ -32,6 +32,7 @@ def fetch(request: Request):
 
 
 @app.post("/request")
+@app.post("/")
 def handle_request(request: Request):
     cache = Cache(CACHE_DB_FILE)
     cached = cache.get(request)

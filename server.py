@@ -1,7 +1,8 @@
 import requests
 from fastapi import FastAPI
-from starlette.middleware.cors import CORSMiddleware
-from starlette.responses import PlainTextResponse
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import PlainTextResponse
 
 from cache import Cache
 from request import Request
@@ -14,6 +15,7 @@ origins = [
 
 app = FastAPI()
 
+app.add_middleware(GZipMiddleware)
 app.add_middleware(
     CORSMiddleware,
     allow_origins=origins,
@@ -21,6 +23,7 @@ app.add_middleware(
     allow_methods=["*"],
     allow_headers=["*"],
 )
+
 
 
 def fetch(request: Request):

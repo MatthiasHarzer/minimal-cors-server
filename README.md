@@ -2,6 +2,8 @@
 
 Makes a request to the given url on the server and returns the text content.
 
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 ### Minimal installation
 - Copy the [`docker-compose.yml`](./docker-compose.yml) file into your local directory.
 - Run `docker compose up --build -d` to start the container.

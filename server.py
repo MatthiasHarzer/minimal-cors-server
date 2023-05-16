@@ -48,6 +48,7 @@ def handle_fetch(request: Request) -> str:
 @app.api_route("/{_:path}", methods=["GET", "POST", "PUT", "DELETE"])
 def handle_request(request: Request, meta: FastApiRequest):
     if request.url is None:
+        print(meta.base_url, meta.url)
         host_url = str(meta.base_url)
         request.url = str(meta.url)[len(host_url):]
 

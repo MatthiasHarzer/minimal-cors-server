@@ -1,7 +1,8 @@
 import requests
 from fastapi import FastAPI
-from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.middleware.gzip import GZipMiddleware
+from fastapi.requests import Request as FastApiRequest
 from fastapi.responses import PlainTextResponse
 
 from cache import Cache
@@ -25,23 +26,40 @@ app.add_middleware(
 )
 
 
-
 def fetch(request: Request):
     req = requests.request(request.method, request.url, data=request.data, headers=request.headers, json=request.body)
     return req.text
 
 
-@app.post("/request")
-@app.post("/")
-def handle_request(request: Request):
+def handle_fetch(request: Request) -> str:
     cache = Cache(CACHE_DB_FILE)
     cached = cache.get(request)
 
     if request.cache and cached:
-        return PlainTextResponse(cached)
+        return cached
 
-    req = requests.request(request.method, request.url, data=request.data, headers=request.headers, json=request.body)
+    req_text = fetch(request)
     if request.cache and not cached:
-        cache.set(request, req.text)
+        cache.set(request, req_text)
 
-    return PlainTextResponse(req.text)
+    return req_text
+
+
+@app.post("/{_:path}")
+def handle_request(request: Request, meta: FastApiRequest):
+    if request.url is None:
+        host_url = str(meta.base_url)
+        request.url = str(meta.url)[len(host_url):]
+
+    if request.url in [None, ""]:
+        return PlainTextResponse("No URL provided.", status_code=400)
+
+    try:
+        result = handle_fetch(request)
+        return PlainTextResponse(result)
+    except requests.exceptions.ConnectionError as e:
+        return PlainTextResponse("Connection error", status_code=400)
+    except (requests.exceptions.InvalidURL, requests.exceptions.MissingSchema) as e:
+        return PlainTextResponse(str(e), status_code=400)
+    except Exception as e:
+        return PlainTextResponse(str(e), status_code=500)

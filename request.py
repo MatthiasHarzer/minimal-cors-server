@@ -9,7 +9,7 @@ class Request(BaseModel):
     method: RequestMethod
     """The HTTP method to use for the request."""
 
-    url: str
+    url: str | None = None
     """The URL to send the request to."""
 
     body: str | None = ""

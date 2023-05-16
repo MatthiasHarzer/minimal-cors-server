@@ -102,7 +102,6 @@ class Cache:
             return
 
         exists = self._get(request) is not None
-        print("Exists: " + str(exists))
 
         headers = json.dumps(request.headers) if request.headers else ""
         data = json.dumps(request.data) if request.data else ""

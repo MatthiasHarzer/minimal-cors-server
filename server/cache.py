@@ -3,7 +3,7 @@ import sqlite3
 from datetime import datetime
 from sqlite3 import Error
 
-from request import Request
+from server.request import Request
 
 
 def _create_table(conn, create_table_sql) -> None:

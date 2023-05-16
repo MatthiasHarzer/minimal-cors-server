@@ -5,10 +5,10 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.requests import Request as FastApiRequest
 from fastapi.responses import PlainTextResponse
 
-from cache import Cache
-from request import Request
+from server.cache import Cache
+from server.request import Request
 
-CACHE_DB_FILE = "./cache.db"
+CACHE_DB_FILE = "cache.db"
 
 origins = [
     "*"

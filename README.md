@@ -2,6 +2,18 @@
 
 Makes a request to the given url on the server and returns the text content.
 
+### Minimal installation
+- Copy the [`docker-compose.yml`](./docker-compose.yml) file into your local directory.
+- Run `docker compose up --build -d` to start the container.
+- The server should now run on `0.0.0.0:9999` (you can change the port in the `docker-compose.yml` file)
+
+### Update the Docker image
+- Run `docker compose down` to stop the running container
+- Rebuild the image with `docker compose build --no-cache`
+- Start the container with `docker compose up -d`
+
+You can also use the [`rebuild.sh`](./rebuild.sh) script to update the server.
+
 ### How To Use:
 Make a post request to `https://<YOUR-ENDPOINT>/` with a body in the following format:
 ```ts

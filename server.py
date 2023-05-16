@@ -45,16 +45,8 @@ def handle_fetch(request: Request) -> str:
     return req_text
 
 
-@app.api_route("/{_:path}", methods=["GET", "POST", "PUT", "DELETE"])
+@app.post("/{_:path}")
 def handle_request(request: Request, meta: FastApiRequest):
-    if request.url is None:
-        print(meta.base_url, meta.url)
-        host_url = str(meta.base_url)
-        request.url = str(meta.url)[len(host_url):]
-
-    if request.url in [None, ""]:
-        return PlainTextResponse("No URL provided.", status_code=400)
-
     try:
         result = handle_fetch(request)
         return PlainTextResponse(result)

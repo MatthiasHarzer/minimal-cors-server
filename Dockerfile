@@ -6,7 +6,7 @@ RUN apt-get update
 RUN apt-get install -y git
 
 # Clone repository
-RUN git clone "https://github.com/MatthiasHarzer/minimal-cors-server.git"
+COPY . /minimal-cors-server
 WORKDIR /minimal-cors-server
 
 # Install dependencies

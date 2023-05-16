@@ -7,7 +7,7 @@ Make a post request to `https://<YOUR-ENDPOINT>/` with a body in the following f
 ```ts
 {
   method: string,
-  url?: string,
+  url: string,
   body?: string,
   headers?: dict,
   data?: dict,

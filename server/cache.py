@@ -92,10 +92,10 @@ class Cache:
 
         time_diff = datetime.now() - timestamp
 
-        if 0 < request.max_age < time_diff.seconds:
-            return None
+        if 0 < time_diff.seconds < request.max_age:
+            return response
 
-        return response
+        return None
 
     def set(self, request: Request, response: str) -> None:
         if not self.initialized:

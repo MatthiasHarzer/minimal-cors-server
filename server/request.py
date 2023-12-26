@@ -12,7 +12,7 @@ class Request(BaseModel):
     url: str
     """The URL to send the request to."""
 
-    body: str | None = ""
+    body: str | None = None
     """The body of the request."""
 
     headers: dict | None = Field(default_factory=dict)

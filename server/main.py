@@ -1,3 +1,6 @@
+import os
+from typing import Protocol
+
 import requests
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
@@ -6,33 +9,61 @@ from fastapi.requests import Request as FastApiRequest
 from fastapi.responses import PlainTextResponse
 
 from server.cache import Cache
+from server.cache_provider.no_cache_provider import NoCacheProvider
+from server.cache_provider.sqlite_cache_provider import SQLiteCacheProvider
 from server.request import Request
 
-CACHE_DB_FILE = "cache.db"
 
-origins = [
-    "*"
-]
+class CacheProvider(Protocol):
+    """
+    A cache provider that can be used to cache requests
+    """
+
+    def get(self, request: Request) -> str | None:
+        ...
+
+    def set(self, request: Request, response: str) -> None:
+        ...
+
+
+CACHE_DB_FILE = "cache.db"
 
 app = FastAPI()
 
 app.add_middleware(GZipMiddleware)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=origins,
+    allow_origins=["*"],
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
 )
 
 
+def get_cache_provider() -> CacheProvider:
+    cache_type = os.environ.get("CACHE", "sqlite")
+
+    match cache_type:
+        case "sqlite":
+            return SQLiteCacheProvider(CACHE_DB_FILE)
+
+    print(f"WARNING: No cache provider found for type {cache_type}. Using NoCacheProvider.")
+
+    return NoCacheProvider()
+
+
+cache: CacheProvider = get_cache_provider()
+
+
 def fetch(request: Request):
-    req = requests.request(request.method, request.url, data=request.data, headers=request.headers, json=request.body)
+    req = requests.request(request.method, request.url,
+                           data=request.data,
+                           headers=request.headers,
+                           json=request.body)
     return req.text
 
 
 def handle_fetch(request: Request) -> str:
-    cache = Cache(CACHE_DB_FILE)
     cached = cache.get(request)
 
     if request.cache and cached:

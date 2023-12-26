@@ -2,9 +2,6 @@ FROM python:3.11
 
 RUN apt-get update
 
-# Install git
-RUN apt-get install -y git
-
 # Clone repository
 COPY . /minimal-cors-server
 WORKDIR /minimal-cors-server

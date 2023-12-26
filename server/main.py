@@ -8,22 +8,12 @@ from fastapi.middleware.gzip import GZipMiddleware
 from fastapi.requests import Request as FastApiRequest
 from fastapi.responses import PlainTextResponse
 
-from server.cache import Cache
+from server.cache_provider.base_cache_provider import CacheProvider
+from server.cache_provider.in_memory_cache_provider import InMemoryCacheProvider
 from server.cache_provider.no_cache_provider import NoCacheProvider
 from server.cache_provider.sqlite_cache_provider import SQLiteCacheProvider
 from server.request import Request
 
-
-class CacheProvider(Protocol):
-    """
-    A cache provider that can be used to cache requests
-    """
-
-    def get(self, request: Request) -> str | None:
-        ...
-
-    def set(self, request: Request, response: str) -> None:
-        ...
 
 
 CACHE_DB_FILE = "cache.db"
@@ -46,6 +36,8 @@ def get_cache_provider() -> CacheProvider:
     match cache_type:
         case "sqlite":
             return SQLiteCacheProvider(CACHE_DB_FILE)
+        case "memory":
+            return InMemoryCacheProvider()
 
     print(f"WARNING: No cache provider found for type {cache_type}. Using NoCacheProvider.")
 

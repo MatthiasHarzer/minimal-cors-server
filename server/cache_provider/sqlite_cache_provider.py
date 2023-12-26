@@ -3,6 +3,7 @@ import sqlite3
 from datetime import datetime
 from sqlite3 import Error
 
+from server.cache_provider.base_cache_provider import CacheProvider
 from server.request import Request
 
 _TABLE_SQL = """
@@ -28,7 +29,7 @@ def _get_current_timestamp() -> str:
     return datetime.now().strftime("%Y-%m-%d %H:%M:%S")
 
 
-class SQLiteCacheProvider:
+class SQLiteCacheProvider(CacheProvider):
     """
     A cache provider that uses SQLite as the backend
     """
@@ -80,20 +81,6 @@ class SQLiteCacheProvider:
                 return str(result[0]), time_stamp
         except Exception as e:
             print("Error while fetching from cache: " + str(e))
-
-        return None
-
-    def get(self, request: Request) -> str | None:
-        cached = self._get(request)
-        if not cached:
-            return None
-
-        response, timestamp = cached
-
-        time_diff = datetime.now() - timestamp
-
-        if request.max_age <= 0 or 0 < time_diff.seconds < request.max_age:
-            return response
 
         return None
 

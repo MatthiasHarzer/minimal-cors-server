@@ -28,11 +28,12 @@ def _get_current_timestamp() -> str:
 
 
 class MySQLCacheProvider(CacheProvider):
-    def __init__(self, host: str, user: str, password: str, database: str):
+    def __init__(self, host: str, user: str, password: str, database: str, port: int = 3306):
         self.host = host
         self.user = user
         self.password = password
         self.database = database
+        self.port = port
         self.initialized = False
         try:
             self._create_table()
@@ -45,7 +46,8 @@ class MySQLCacheProvider(CacheProvider):
             host=self.host,
             user=self.user,
             password=self.password,
-            database=self.database
+            database=self.database,
+            port=self.port
         )
 
     def _create_table(self):

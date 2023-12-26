@@ -30,7 +30,7 @@ app.add_middleware(
 
 
 def get_cache_provider() -> CacheProvider:
-    cache_type = os.environ.get("CACHE", "sqlite")
+    cache_type = os.environ.get("CACHE_MODE", "sqlite")
 
     match cache_type:
         case "sqlite":
@@ -56,6 +56,8 @@ def get_cache_provider() -> CacheProvider:
                 password=password,
                 database=database
             )
+        case "none":
+            return NoCacheProvider()
 
     print(f"WARNING: No cache provider found for type {cache_type}. Using NoCacheProvider.")
 

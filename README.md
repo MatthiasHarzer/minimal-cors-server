@@ -4,20 +4,33 @@ Makes a request to the given url on the server and returns the text content. Opt
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-### How to setup
+## How to setup
 - Copy the [`docker-compose.yml`](./docker-compose.yml) file into your local directory.
 - Run `docker compose up -d` to start the container.
 - The server should now run on `0.0.0.0:9999` (you can change the port in the `docker-compose.yml` file)
 
-### Update the Docker image
+### Configure caching behavior (optional)
+You can configure the caching behavior of the server by setting some environment variables in the [`docker-compose.yml`](./docker-compose.yml) file.
+There are four caching modes available by setting the `CACHE_MODE` environment variable:
+
+| **`CACHE_MODE`**     | Description                                                                         | Additional settings                                                                                                  |
+|----------------------|-------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------------------------|
+| `sqlite` _(default)_ | Saves the responses in a SQLite database                                            | Set the `SQLITE_FILE` environment variable to modify the cache file. Defaults to `./cache.db`                        |
+| `mysql`              | Connects to a MySQL-database to cache responses                                     | Requires setting `MYSQL_HOST`, `MYSQL_USER`, `MYSQL_PASSWORD` and `MYSQL_DATABASE` environment variables accordingly |
+| `memory`             | Uses an in-memory cache to store responses                                          | _(none)_                                                                                                             |
+| `none`               | Disables caching completely. `cache` and `max_age` will be ignored for all requests | _(none)_                                                                                                             |
+
+If an unrecognized value is set for `CACHE_MODE`, no caching will be used.
+ 
+## Update the Docker image
 - Run `docker compose down` to stop the running container
 - Rebuild the image with `docker compose build --no-cache`
 - Start the container with `docker compose up -d`
 
 You can also use the very simple [`rebuild.sh`](./rebuild.sh) script to update the server.
 
-### How To Use
-Make a `post` request to `https://<YOUR-ENDPOINT>/` with a body in the following format:
+## How To Use
+Make a `POST` request to `https://<YOUR-ENDPOINT>/` with a body in the following format:
 ```ts
 {
   method: string,

@@ -10,11 +10,10 @@ from fastapi.responses import PlainTextResponse
 
 from server.cache_provider.base_cache_provider import CacheProvider
 from server.cache_provider.in_memory_cache_provider import InMemoryCacheProvider
+from server.cache_provider.mysql_cache_provider import MySQLCacheProvider
 from server.cache_provider.no_cache_provider import NoCacheProvider
 from server.cache_provider.sqlite_cache_provider import SQLiteCacheProvider
 from server.request import Request
-
-
 
 CACHE_DB_FILE = "cache.db"
 
@@ -35,9 +34,28 @@ def get_cache_provider() -> CacheProvider:
 
     match cache_type:
         case "sqlite":
-            return SQLiteCacheProvider(CACHE_DB_FILE)
+            db_file = os.environ.get("SQLITE_FILE", CACHE_DB_FILE)
+            return SQLiteCacheProvider(db_file)
         case "memory":
             return InMemoryCacheProvider()
+        case "mysql":
+            host = os.environ.get("MYSQL_HOST")
+            user = os.environ.get("MYSQL_USER")
+            password = os.environ.get("MYSQL_PASSWORD")
+            database = os.environ.get("MYSQL_DATABASE")
+
+            if None in (host, user, password, database):
+                print("WARNING: Missing environment variables for MySQL cache provider. "
+                      "Required: MYSQL_HOST, MYSQL_USER, MYSQL_PASSWORD, MYSQL_DATABASE"
+                      "\nFalling back to NoCacheProvider.")
+                return NoCacheProvider()
+
+            return MySQLCacheProvider(
+                host=host,
+                user=user,
+                password=password,
+                database=database
+            )
 
     print(f"WARNING: No cache provider found for type {cache_type}. Using NoCacheProvider.")
 
@@ -56,14 +74,21 @@ def fetch(request: Request):
 
 
 def handle_fetch(request: Request) -> str:
-    cached = cache.get(request)
+    try:
+        cached = cache.get(request)
+    except Exception as e:
+        print(f"Error while getting from cache: {e}")
+        cached = None
 
     if request.cache and cached:
         return cached
 
     req_text = fetch(request)
     if request.cache and not cached:
-        cache.set(request, req_text)
+        try:
+            cache.set(request, req_text)
+        except Exception as e:
+            print(f"Error while setting cache: {e}")
 
     return req_text
 

@@ -90,27 +90,23 @@ class SQLiteCacheProvider(CacheProvider):
 
         headers = json.dumps(request.headers) if request.headers else ""
         data = json.dumps(request.data) if request.data else ""
-        try:
-            with self._connect() as conn:
-                c = conn.cursor()
 
-                c.execute("SELECT response, timestamp FROM cache WHERE method = ? "
-                          "AND url = ? AND body IS ? AND headers IS ? AND data IS ?",
-                          (request.method, request.url, request.body, headers, data))
-                has_existing = c.fetchone() is not None
+        with self._connect() as conn:
+            c = conn.cursor()
 
-                if has_existing:
-                    c.execute("UPDATE cache SET response = ?, timestamp = ? WHERE method = ? "
-                              "AND url = ? AND body IS ? AND headers IS ? AND data IS ?",
-                              (response, _get_current_timestamp(), request.method, request.url, request.body, headers,
-                               data))
-                    conn.commit()
-                    return
-                else:
-                    c.execute(
-                        "INSERT INTO cache (method, url, response, body, headers, data, timestamp) "
-                        "VALUES (?, ?, ?, ?, ?, ?, ?)",
-                        (request.method, request.url, response, request.body, headers, data, _get_current_timestamp()))
-                    conn.commit()
-        except Error as e:
-            print("Error while saving to cache: " + str(e))
+            c.execute("SELECT id, timestamp FROM cache WHERE method = ? "
+                      "AND url = ? AND body IS ? AND headers IS ? AND data IS ?",
+                      (request.method, request.url, request.body, headers, data))
+            result = c.fetchone()
+
+            if result:
+                c.execute("UPDATE cache SET response = ?, timestamp = ? WHERE id = ?",
+                          (response, _get_current_timestamp(), result[0]))
+                conn.commit()
+                return
+            else:
+                c.execute(
+                    "INSERT INTO cache (method, url, response, body, headers, data, timestamp) "
+                    "VALUES (?, ?, ?, ?, ?, ?, ?)",
+                    (request.method, request.url, response, request.body, headers, data, _get_current_timestamp()))
+                conn.commit()

@@ -1,5 +1,4 @@
 import os
-from typing import Protocol
 
 import requests
 from fastapi import FastAPI
@@ -31,6 +30,8 @@ app.add_middleware(
 
 def get_cache_provider() -> CacheProvider:
     cache_type = os.environ.get("CACHE_MODE", "sqlite")
+
+    print("Using cache provider: " + cache_type)
 
     match cache_type:
         case "sqlite":

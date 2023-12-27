@@ -21,6 +21,7 @@ There are four caching modes available by setting the `CACHE_MODE` environment v
 | `none`               | Disables caching completely. `cache` and `max_age` will be ignored for all requests | _(none)_                                                                                                                                                                                                                                                                               |
 
 If an unrecognized value is set for `CACHE_MODE`, no caching will be used.
+See the [`examples`](./examples) for some example docker compose configurations.
  
 ## Update the Docker image
 - Run `docker compose down` to stop the running container

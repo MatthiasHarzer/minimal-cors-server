@@ -14,7 +14,7 @@ from server.cache_provider.no_cache_provider import NoCacheProvider
 from server.cache_provider.sqlite_cache_provider import SQLiteCacheProvider
 from server.request import Request
 
-CACHE_DB_FILE = "cache.db"
+CACHE_DB_FILE = "cache_old.db"
 
 app = FastAPI()
 

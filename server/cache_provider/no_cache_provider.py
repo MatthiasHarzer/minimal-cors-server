@@ -1,4 +1,4 @@
-from server.main import CacheProvider
+from server.cache_provider.base_cache_provider import CacheProvider
 from server.request import Request
 
 

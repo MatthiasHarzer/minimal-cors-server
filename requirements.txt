@@ -1,5 +1,5 @@
 fastapi~=0.109.1
 uvicorn~=0.21.1
 pydantic~=1.10.7
-requests~=2.31.0
+requests~=2.32.0
 mysql-connector~=2.2.9

@@ -1,3 +1,5 @@
+# Disclaimer: This project has been succeeded by the [`simple-proxy-server`](https://github.com/MatthiasHarzer/simple-proxy-server) and is depracated
+-----------------------
 # A minimal CORS server
 
 Makes a request to the given url on the server and returns the text content. Optionaly caches the response for improved response-time.
